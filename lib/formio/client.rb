@@ -14,7 +14,7 @@ module Formio
         set_headers(req)
       end
       parse_response(response.body).map do |formio_hash|
-        FormioRecord.new(formio_hash)
+        Record.new(formio_hash)
       end
     end
 
@@ -30,14 +30,14 @@ module Formio
         }.to_json
       end
       if response.status >= 200 && response.status < 300
-        FormioRecord.new(parse_response(response.body))
+        Record.new(parse_response(response.body))
       else
         parse_response(response.body)['details'].map { |x| x['message'] }
       end
     end
 
     def update(record)
-      raise "Must supply a formio form" unless record.is_a?(FormioRecord)
+      raise "Must supply a formio form" unless record.is_a?(Record)
       response = connection.put do |req|
         req.url "/#{record.form_name}/submission/#{record.id}"
         req.url "/form/#{record.form_id}/submission/#{record.id}" if record.form_id
@@ -47,7 +47,7 @@ module Formio
 
       return update(record) if response.status == 502
       if response.status >= 200 && response.status < 300
-        FormioRecord.new(parse_response(response.body))
+        Record.new(parse_response(response.body))
       else
         parse_response(response.body)['details'].map { |x| x['message'] }
       end
@@ -60,9 +60,9 @@ module Formio
       end
       return find_by_id form, submission_id if response.status == 502
       if response.status == 200
-        FormioRecord.new(parse_response(response.body))
+        Record.new(parse_response(response.body))
       else
-        FormioRecord::Nil.new
+        Record::Nil.new
       end
     end
 
@@ -79,7 +79,7 @@ module Formio
       if response.status == 200
         return find_by_id(form, JSON.parse(response.body)['_id'])
       else
-        FormioRecord::Nil.new
+        Record::Nil.new
       end
     end
 
@@ -156,7 +156,7 @@ module Formio
         .try { |stringio| read_gzip_data.call(stringio) }
         .try { |reader| reader.read }
         .try { |json_string| JSON.parse(json_string) }
-        .yield_self { |parsed_json| parsed_json || [] } # casts to empty array if anything went wrong
+        .yield_self { |parsed_json| parsed_json || [] }
     end
 
     def connection
@@ -178,12 +178,12 @@ module Formio
         req.url '/current'
         set_headers(req)
       end
-      FormioRecord.new(parse_response(response.body))
+      Record.new(parse_response(response.body))
     end
 
     def login
       @auth_token ||= begin
-        Rails.cache.fetch("formio_login" + email, expires_in: 12.hours) do
+        Rails.cache.fetch("formio_login_" + email, expires_in: 12.hours) do
           formio_conn = Faraday::Connection.new("https://formio.form.io", ssl: { verify: true })
 
           login_response = formio_conn.post do |req|

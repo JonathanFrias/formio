@@ -8,6 +8,7 @@ module Formio
       :name,
       :title,
       :path,
+      :submission_access,
       :created_at,
       :updated_at
     )
@@ -21,6 +22,7 @@ module Formio
       @path = formio_hash['path']
       @created_at = DateTime.parse formio_hash['created']
       @updated_at = DateTime.parse formio_hash['modified']
+      @submission_access = formio_hash['submissionAccess']
     end
 
     def name=(name)
@@ -31,15 +33,16 @@ module Formio
       @name = @title = title
     end
 
+    def id
+      formio_hash['_id']
+    end
+
+    def to_h
+      formio_hash
+    end
+
     def to_json
-      {
-        title: title,
-        display: 'form',
-        type: type,
-        name: name,
-        path: path,
-        components: components,
-      }.to_json
+      to_h.to_json
     end
   end
 end

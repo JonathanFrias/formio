@@ -24,6 +24,14 @@ module Formio
       formio_hash
     end
 
+    def [](key)
+      formio_hash[key]
+    end
+
+    def []=(key, value)
+      formio_hash[key] = value
+    end
+
     attr_reader(
       :id,
       :_id,

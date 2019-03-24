@@ -99,14 +99,14 @@ module Formio
       response = parse_response(response.body)
       if response.is_a?(Array)
         return response.map do |f|
-          FormioForm.new f
+          ::Formio::Form.new f
         end
       end
-      FormioForm.new(response)
+      ::Formio::Form.new(response)
     end
 
     def create_form(formio_form)
-      raise "Must supply a formio form" unless formio_form.is_a?(FormioForm)
+      raise "Must supply a formio form" unless formio_form.is_a?(::Formio::Form)
       response = connection.post do |req|
         req.url "/form"
         set_headers(req)
@@ -116,6 +116,18 @@ module Formio
         raise (JSON.parse(response.body)['message'])
       end
       true
+    end
+
+    def update_form(formio_form)
+      raise "Must supply a formio form" unless formio_form.is_a?(::Formio::Form)
+      response = connection.put do |req|
+        req.url "/form/#{formio_form.id}"
+        set_headers(req)
+        req.body = formio_form.to_json
+      end
+      if response.status >= 200 && response.status < 300
+        parse_response(response.body)
+      end
     end
 
     def delete_form(form_name)
@@ -146,8 +158,8 @@ module Formio
           Zlib::GzipReader.new(stringio, encoding: 'ASCII-8BIT')
         rescue Zlib::GzipFile::Error
           puts "An issue occured with formio: #{response}"
-        rescue
-          puts "An issue occured with formio"
+        rescue e
+          puts "An issue occured with formio #{response}"
         end
       }
 
@@ -178,11 +190,13 @@ module Formio
         req.url '/current'
         set_headers(req)
       end
+      return nil unless response.status >= 200 && response.status < 300
       Record.new(parse_response(response.body))
     end
 
     def login
       @auth_token ||= begin
+        return unless email
         Rails.cache.fetch("formio_login_" + email, expires_in: 12.hours) do
           formio_conn = Faraday::Connection.new("https://formio.form.io", ssl: { verify: true })
 

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'formio'
-  s.version     = '0.0.1'
+  s.version     = '0.0.3'
   s.date        = '2019-03-04'
   s.summary     = "A Ruby adapter for the form.io platform"
   s.description = "A Ruby adapter for the form.io platform"
@@ -10,8 +10,4 @@ Gem::Specification.new do |s|
   s.homepage    =
     'http://rubygems.org/gems/formio'
   s.license       = 'MIT'
-
-  s.add_dependency 'faraday'
-  s.add_dependency 'faraday-detailed_logger'
-  s.add_dependency 'faraday_curl'
 end

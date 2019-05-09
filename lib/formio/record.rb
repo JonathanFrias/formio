@@ -50,7 +50,7 @@ module Formio
       def initialize
         @_id = @id = nil
         @form_id = nil
-        @formio_hash = {data: {}}
+        @formio_hash = {data: {}}.with_indifferent_access
         @form_name = nil
         @created_at = nil
         @updated_at = nil

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'formio'
-  s.version     = '0.0.3'
+  s.version     = '0.0.4'
   s.date        = '2019-03-04'
   s.summary     = "A Ruby adapter for the form.io platform"
   s.description = "A Ruby adapter for the form.io platform"

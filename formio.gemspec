@@ -10,4 +10,8 @@ Gem::Specification.new do |s|
   s.homepage    =
     'http://rubygems.org/gems/formio'
   s.license       = 'MIT'
+  s.add_dependency("faraday")
+  s.add_dependency("faraday-cookie_jar")
+  s.add_dependency("faraday_curl")
+  s.add_dependency("faraday-detailed_logger")
 end

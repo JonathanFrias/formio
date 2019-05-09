@@ -16,6 +16,10 @@ module Formio
       end
     end
 
+    def present?
+      true
+    end
+
     def to_json
       formio_hash.to_json
     end
@@ -46,10 +50,14 @@ module Formio
       def initialize
         @_id = @id = nil
         @form_id = nil
-        @formio_hash = nil
+        @formio_hash = {data: {}}
         @form_name = nil
         @created_at = nil
         @updated_at = nil
+      end
+
+      def present?
+        false
       end
     end
   end

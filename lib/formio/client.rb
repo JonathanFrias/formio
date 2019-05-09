@@ -36,13 +36,13 @@ module Formio
       end
     end
 
-    def update(record)
+    def update(record, max_depth: 2)
       raise "Must supply a formio form" unless record.is_a?(Record)
       response = connection.put do |req|
         req.url "/#{record.form_name}/submission/#{record.id}"
         req.url "/form/#{record.form_id}/submission/#{record.id}" if record.form_id
         set_headers(req)
-        req.body = record.to_json
+        req.body = compact_formio_hash(record.formio_hash, max_depth).to_json
       end
 
       return update(record) if response.status == 502
@@ -51,6 +51,10 @@ module Formio
       else
         parse_response(response.body)['details'].map { |x| x['message'] }
       end
+
+    rescue Net::OpenTimeout
+      binding.pry
+      retry
     end
 
     def find_by_id(form, submission_id)
@@ -176,6 +180,9 @@ module Formio
       @connection ||= Faraday::Connection.new(project_url,
         ssl: { verify: true }
       ) do |builder|
+        require 'faraday_curl'
+        # require 'faraday-detailed_logger'
+        require 'faraday-cookie_jar'
         # builder.request  :multipart
         # builder.use ::FaradayMiddleware::ParseJson, content_type: 'application/json'
         # builder.request  :url_encoded
@@ -197,27 +204,40 @@ module Formio
     def login
       @auth_token ||= begin
         return unless email
-        Rails.cache.fetch("formio_login_" + email, expires_in: 12.hours) do
-          formio_conn = Faraday::Connection.new("https://formio.form.io", ssl: { verify: true })
+        formio_conn = Faraday::Connection.new("https://formio.form.io", ssl: { verify: true })
 
-          login_response = formio_conn.post do |req|
-            req.url "/user/login"
-            req.headers['Content-Type'] = 'application/json'
-            req.headers['Accept'] = 'application/json'
-            req.body = {
-              data: {
-                email: email,
-                password: password
-              }
-            }.to_json
-          end
-          login_response.headers['x-jwt-token']
+        login_response = formio_conn.post do |req|
+          req.url "/user/login"
+          req.headers['Content-Type'] = 'application/json'
+          req.headers['Accept'] = 'application/json'
+          req.body = {
+            data: {
+              email: email,
+              password: password
+            }
+          }.to_json
         end
+        login_response.headers['x-jwt-token']
       end
     end
     alias auth_token login
 
-    private
     attr_reader :email, :password, :project_url
+
+    def compact_formio_hash(data, max_level=2)
+      return unless data.is_a?(Hash) || data.is_a?(Array)
+      data.each do |k,v|
+        if max_level <= 0
+          data.delete k
+        else
+          if(v.is_a?(Hash))
+            compact_formio_hash(v, max_level - 1)
+          end
+          if(v.is_a?(Array))
+            v.each { |elem| compact_formio_hash(elem, max_level) }
+          end
+        end
+      end.compact
+    end
   end
 end

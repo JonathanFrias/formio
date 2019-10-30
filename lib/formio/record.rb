@@ -2,7 +2,7 @@ module Formio
   class Record
     def initialize(formio_hash)
       if formio_hash.empty? || formio_hash.nil?
-        raise "cannot construct FormioRecord"
+        raise "Cannot construct a Formio::Record with empty input!"
       end
       @_id = @id = formio_hash['_id']
       @form_id = formio_hash['form'] if formio_hash['form']

@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.summary     = "A Ruby adapter for the form.io platform"
   s.description = "A Ruby adapter for the form.io platform"
   s.authors     = ["Jonathan Frias"]
-  s.email       = 'jonathan.frias1@gmail.com'
+  s.email       = 'jonathan@gofrias.com'
   s.files       = Dir["{lib}/**/*", "MIT-LICENSE", "README.md"]
   s.homepage    =
     'http://rubygems.org/gems/formio'
